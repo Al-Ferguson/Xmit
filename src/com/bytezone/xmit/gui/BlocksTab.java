@@ -12,61 +12,59 @@ import javafx.scene.input.KeyCode;
 
 // -----------------------------------------------------------------------------------//
 class BlocksTab extends XmitTextTab
-    implements NodeDataListener, TableItemSelectionListener
+        implements NodeDataListener, TableItemSelectionListener
 // -----------------------------------------------------------------------------------//
 {
-  private NodeData nodeData;
-  private DataFile dataFile;
+    private NodeData nodeData;
+    private DataFile dataFile;
 
-  // ---------------------------------------------------------------------------------//
-  public BlocksTab (String title, KeyCode keyCode)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (title, keyCode);
-  }
+    // ---------------------------------------------------------------------------------//
+    public BlocksTab(String title, KeyCode keyCode)
+    // ---------------------------------------------------------------------------------//
+    {
+        super(title, keyCode);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  List<String> getLines ()
-  // ---------------------------------------------------------------------------------//
-  {
-    List<String> lines = new ArrayList<> ();
+    // ---------------------------------------------------------------------------------//
+    @Override
+    List<String> getLines()
+    // ---------------------------------------------------------------------------------//
+    {
+        List<String> lines = new ArrayList<>();
 
-    if (dataFile != null)
-      if (nodeData.isPartitionedDataset ())
-      {
-        PdsMember member = ((PdsMember) dataFile);
-        member.listSizeCounts (lines);
-        member.getText (lines);
-        //        lines.add (member.getText ());        // should split
-      }
-      else
-        lines.add (dataFile.toString ());     // should split
+        if (dataFile != null)
+            if (nodeData.isPartitionedDataset()) {
+                PdsMember member = ((PdsMember) dataFile);
+                member.listSizeCounts(lines);
+                member.getText(lines);
+                //        lines.add (member.getText ());        // should split
+            } else
+                lines.add(dataFile.toString());     // should split
 
-    return lines;
-  }
+        return lines;
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void treeNodeSelected (NodeData nodeData)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.nodeData = nodeData;
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void treeNodeSelected(NodeData nodeData)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.nodeData = nodeData;
 
-    if (nodeData.isPhysicalSequentialDataset ())
-      dataFile = nodeData.getDataFile ();
-    else
-      dataFile = null;
+        if (nodeData.isPhysicalSequentialDataset())
+            dataFile = nodeData.getDataFile();
+        else
+            dataFile = null;
 
-    refresh ();
-  }
+        refresh();
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void tableItemSelected (CatalogEntry catalogEntry)
-  // ---------------------------------------------------------------------------------//
-  {
-    dataFile = catalogEntry == null ? null : catalogEntry.getMember ();
-    refresh ();
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void tableItemSelected(CatalogEntry catalogEntry)
+    // ---------------------------------------------------------------------------------//
+    {
+        dataFile = catalogEntry == null ? null : catalogEntry.getMember();
+        refresh();
+    }
 }

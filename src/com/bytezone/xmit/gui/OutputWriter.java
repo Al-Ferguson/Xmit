@@ -6,5 +6,5 @@ import java.io.File;
 interface OutputWriter
 // -----------------------------------------------------------------------------------//
 {
-  void write (File file);
+    void write(File file);
 }

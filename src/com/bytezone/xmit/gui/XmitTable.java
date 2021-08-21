@@ -23,247 +23,241 @@ import javafx.scene.text.Font;
 
 // -----------------------------------------------------------------------------------//
 class XmitTable extends TableView<CatalogEntryItem>                                   //
-    implements SaveState, NodeDataListener, FontChangeListener, FilterChangeListener
+        implements SaveState, NodeDataListener, FontChangeListener, FilterChangeListener
 // -----------------------------------------------------------------------------------//
 {
-  private static final String PREFS_LAST_MEMBER_NAME = "LastMemberName";
+    private static final String PREFS_LAST_MEMBER_NAME = "LastMemberName";
 
-  private final List<FilterActionListener> filterListeners = new ArrayList<> ();
-  private final List<TableItemSelectionListener> selectionListeners = new ArrayList<> ();
-  private final ObservableList<CatalogEntryItem> items =
-      FXCollections.observableArrayList ();
+    private final List<FilterActionListener> filterListeners = new ArrayList<>();
+    private final List<TableItemSelectionListener> selectionListeners = new ArrayList<>();
+    private final ObservableList<CatalogEntryItem> items =
+            FXCollections.observableArrayList();
 
-  private NodeData nodeData;
-  private FilterStatus filterStatus;
+    private NodeData nodeData;
+    private FilterStatus filterStatus;
 
-  private DisplayType currentDisplayType = null;
-  private final List<DataColumn<?>> dataColumns = new ArrayList<> ();
+    private DisplayType currentDisplayType = null;
+    private final List<DataColumn<?>> dataColumns = new ArrayList<>();
 
-  // keep track of previously selected member for each dataset
-  private final Map<Dataset, String> selectedMembers = new HashMap<> ();
+    // keep track of previously selected member for each dataset
+    private final Map<Dataset, String> selectedMembers = new HashMap<>();
 
-  // ---------------------------------------------------------------------------------//
-  XmitTable ()
-  // ---------------------------------------------------------------------------------//
-  {
-    SortedList<CatalogEntryItem> sortedList = new SortedList<> (items);
-    sortedList.comparatorProperty ().bind (this.comparatorProperty ());
-    setItems (sortedList);
-
-    dataColumns.addAll (Arrays.asList (
-        new StringColumn ("Member", "MemberName", 8, "CENTER-LEFT", DisplayType.ALL),
-        new NumberColumn ("Bytes", "Bytes", 9, DisplayType.ALL),
-        new StringColumn ("Id", "UserName", 8, "CENTER-LEFT", DisplayType.BASIC),
-        new NumberColumn ("Size", "Size", 7, DisplayType.BASIC),
-        new NumberColumn ("Init", "Init", 7, DisplayType.BASIC),
-        new LocalDateColumn ("Created", "DateCreated", 10, DisplayType.BASIC),
-        new LocalDateColumn ("Modified", "DateModified", 10, DisplayType.BASIC),
-        new StringColumn ("Time", "Time", 8, "CENTER", DisplayType.BASIC),
-        new FileTypeColumn ("Type", "Type", 5, "CENTER", DisplayType.BASIC),
-        new StringColumn ("ver.mod", "Version", 7, "CENTER", DisplayType.BASIC),
-        new NumberColumn ("Storage", "storage", 7, "%06X", "CENTER", DisplayType.LOAD),
-        new NumberColumn ("Entry", "epa", 7, "%06X", "CENTER", DisplayType.LOAD),
-        new StringColumn ("APF", "apf", 4, "CENTER", DisplayType.LOAD),
-        new NumberColumn ("amode", "aMode", 5, DisplayType.LOAD),
-        new NumberColumn ("rmode", "rMode", 5, DisplayType.LOAD),
-        new NumberColumn ("ssi", "ssi", 8, "%08X", "CENTER", DisplayType.LOAD),
-        new StringColumn ("Attributes", "attr", 10, "CENTER", DisplayType.LOAD),
-        new StringColumn ("Alias", "AliasName", 8, "CENTER-LEFT", DisplayType.ALL)));
-
-    Collections.sort (dataColumns);                   // sort into saved sequence
-
-    for (DataColumn<?> dataColumn : dataColumns)
-      getColumns ().add (dataColumn.createColumn ());
-
-    getSelectionModel ().selectedItemProperty ()
-        .addListener ( (obs, oldSel, newSel) -> selected (obs, oldSel, newSel));
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void selected (ObservableValue<? extends CatalogEntryItem> obs,
-      CatalogEntryItem oldSel, CatalogEntryItem newSel)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (newSel != null)
+    // ---------------------------------------------------------------------------------//
+    XmitTable()
+    // ---------------------------------------------------------------------------------//
     {
-      CatalogEntry catalogEntry = newSel.getCatalogEntry ();
-      selectedMembers.put (nodeData.getDataset (), catalogEntry.getMemberName ());
-      for (TableItemSelectionListener listener : selectionListeners)
-        listener.tableItemSelected (catalogEntry);
+        SortedList<CatalogEntryItem> sortedList = new SortedList<>(items);
+        sortedList.comparatorProperty().bind(this.comparatorProperty());
+        setItems(sortedList);
+
+        dataColumns.addAll(Arrays.asList(
+                new StringColumn("Member", "MemberName", 8, "CENTER-LEFT", DisplayType.ALL),
+                new NumberColumn("Bytes", "Bytes", 9, DisplayType.ALL),
+                new StringColumn("Id", "UserName", 8, "CENTER-LEFT", DisplayType.BASIC),
+                new NumberColumn("Size", "Size", 7, DisplayType.BASIC),
+                new NumberColumn("Init", "Init", 7, DisplayType.BASIC),
+                new LocalDateColumn("Created", "DateCreated", 10, DisplayType.BASIC),
+                new LocalDateColumn("Modified", "DateModified", 10, DisplayType.BASIC),
+                new StringColumn("Time", "Time", 8, "CENTER", DisplayType.BASIC),
+                new FileTypeColumn("Type", "Type", 5, "CENTER", DisplayType.BASIC),
+                new StringColumn("ver.mod", "Version", 7, "CENTER", DisplayType.BASIC),
+                new NumberColumn("Storage", "storage", 7, "%06X", "CENTER", DisplayType.LOAD),
+                new NumberColumn("Entry", "epa", 7, "%06X", "CENTER", DisplayType.LOAD),
+                new StringColumn("APF", "apf", 4, "CENTER", DisplayType.LOAD),
+                new NumberColumn("amode", "aMode", 5, DisplayType.LOAD),
+                new NumberColumn("rmode", "rMode", 5, DisplayType.LOAD),
+                new NumberColumn("ssi", "ssi", 8, "%08X", "CENTER", DisplayType.LOAD),
+                new StringColumn("Attributes", "attr", 10, "CENTER", DisplayType.LOAD),
+                new StringColumn("Alias", "AliasName", 8, "CENTER-LEFT", DisplayType.ALL)));
+
+        Collections.sort(dataColumns);                   // sort into saved sequence
+
+        for (DataColumn<?> dataColumn : dataColumns)
+            getColumns().add(dataColumn.createColumn());
+
+        getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldSel, newSel) -> selected(obs, oldSel, newSel));
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  void addListener (TableItemSelectionListener listener)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (!selectionListeners.contains (listener))
-      selectionListeners.add (listener);
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void setVisibleColumns (ModuleType moduleType)
-  // ---------------------------------------------------------------------------------//
-  {
-    DisplayType displayType =
-        moduleType == ModuleType.BASIC ? DisplayType.BASIC : DisplayType.LOAD;
-    if (currentDisplayType != displayType)
+    // ---------------------------------------------------------------------------------//
+    private void selected(ObservableValue<? extends CatalogEntryItem> obs,
+                          CatalogEntryItem oldSel, CatalogEntryItem newSel)
+    // ---------------------------------------------------------------------------------//
     {
-      currentDisplayType = displayType;
-      for (DataColumn<?> dataColumn : dataColumns)
-        dataColumn.column.setVisible (dataColumn.matches (displayType));
+        if (newSel != null) {
+            CatalogEntry catalogEntry = newSel.getCatalogEntry();
+            selectedMembers.put(nodeData.getDataset(), catalogEntry.getMemberName());
+            for (TableItemSelectionListener listener : selectionListeners)
+                listener.tableItemSelected(catalogEntry);
+        }
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void save (Preferences prefs)
-  // ---------------------------------------------------------------------------------//
-  {
-    CatalogEntryItem catalogEntryItem = getSelectionModel ().getSelectedItem ();
-    String name = catalogEntryItem == null ? "" : catalogEntryItem.getMemberName ();
-    prefs.put (PREFS_LAST_MEMBER_NAME, name);
-
-    int seq = 0;
-    for (TableColumn<CatalogEntryItem, ?> column : getColumns ())
-      ((DataColumn<?>) column.getUserData ()).save (seq++);
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void restore (Preferences prefs)
-  // ---------------------------------------------------------------------------------//
-  {
-    String name = prefs.get (PREFS_LAST_MEMBER_NAME, "");
-    selectCatalogEntryItem (find (name));
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private CatalogEntryItem find (String name)
-  // ---------------------------------------------------------------------------------//
-  {
-    for (CatalogEntryItem catalogEntryItem : items)
-      if (name.equals (catalogEntryItem.getMemberName ()))
-        return catalogEntryItem;
-    return null;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  void addFilterListener (FilterActionListener listener)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (!filterListeners.contains (listener))
-      filterListeners.add (listener);
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void treeNodeSelected (NodeData nodeData)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.nodeData = nodeData;
-    if (nodeData.isPartitionedDataset ())
+    // ---------------------------------------------------------------------------------//
+    void addListener(TableItemSelectionListener listener)
+    // ---------------------------------------------------------------------------------//
     {
-      setVisibleColumns (((PdsDataset) nodeData.getDataset ()).getModuleType ());
-      buildList (previousSelection (nodeData.getDataset ()));
+        if (!selectionListeners.contains(listener))
+            selectionListeners.add(listener);
     }
-    else
+
+    // ---------------------------------------------------------------------------------//
+    private void setVisibleColumns(ModuleType moduleType)
+    // ---------------------------------------------------------------------------------//
     {
-      items.clear ();
-      setPlaceholder (new Label ("Not a Partitioned Dataset"));
+        DisplayType displayType =
+                moduleType == ModuleType.BASIC ? DisplayType.BASIC : DisplayType.LOAD;
+        if (currentDisplayType != displayType) {
+            currentDisplayType = displayType;
+            for (DataColumn<?> dataColumn : dataColumns)
+                dataColumn.column.setVisible(dataColumn.matches(displayType));
+        }
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  String previousSelection (Dataset dataset)
-  // ---------------------------------------------------------------------------------//
-  {
-    return (selectedMembers.containsKey (dataset) ? selectedMembers.get (dataset) : "");
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void setFilter (FilterStatus filterStatus)
-  // ---------------------------------------------------------------------------------//
-  {
-    Objects.requireNonNull (filterStatus);
-    if (filterStatus.matches (this.filterStatus))
-      return;
-
-    this.filterStatus = filterStatus;
-
-    if (nodeData != null && nodeData.isPartitionedDataset ())
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void save(Preferences prefs)
+    // ---------------------------------------------------------------------------------//
     {
-      CatalogEntryItem selectedItem = getSelectionModel ().getSelectedItem ();
-      String selectedName = selectedItem == null ? "" : selectedItem.getMemberName ();
-      buildList (selectedName);
+        CatalogEntryItem catalogEntryItem = getSelectionModel().getSelectedItem();
+        String name = catalogEntryItem == null ? "" : catalogEntryItem.getMemberName();
+        prefs.put(PREFS_LAST_MEMBER_NAME, name);
+
+        int seq = 0;
+        for (TableColumn<CatalogEntryItem, ?> column : getColumns())
+            ((DataColumn<?>) column.getUserData()).save(seq++);
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  private void buildList (String selectedName)
-  // ---------------------------------------------------------------------------------//
-  {
-    // setEmptyTableMessage
-    if (filterStatus.filterValue.isEmpty ())
-      setPlaceholder (new Label (String.format ("No members to display")));
-    else
-      setPlaceholder (new Label (
-          String.format ("No members contain '%s'", filterStatus.filterValue)));
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void restore(Preferences prefs)
+    // ---------------------------------------------------------------------------------//
+    {
+        String name = prefs.get(PREFS_LAST_MEMBER_NAME, "");
+        selectCatalogEntryItem(find(name));
+    }
 
-    // create filter
-    Filter filter =
-        ((PdsDataset) nodeData.getDataset ()).getFilter (filterStatus.filterValue);
-    FilterMode filterMode =
-        filterStatus.filterValue.isEmpty () || !filterStatus.filterActive ? FilterMode.OFF
-            : filterStatus.filterReverse ? FilterMode.REVERSED : FilterMode.ON;
+    // ---------------------------------------------------------------------------------//
+    private CatalogEntryItem find(String name)
+    // ---------------------------------------------------------------------------------//
+    {
+        for (CatalogEntryItem catalogEntryItem : items)
+            if (name.equals(catalogEntryItem.getMemberName()))
+                return catalogEntryItem;
+        return null;
+    }
 
-    // build items based on filter value
-    items.clear ();
-    for (CatalogEntry catalogEntry : filter.getCatalogEntries (filterMode))
-      items.add (new CatalogEntryItem (catalogEntry));
+    // ---------------------------------------------------------------------------------//
+    void addFilterListener(FilterActionListener listener)
+    // ---------------------------------------------------------------------------------//
+    {
+        if (!filterListeners.contains(listener))
+            filterListeners.add(listener);
+    }
 
-    // notify filter listeners
-    for (FilterActionListener listener : filterListeners)
-      listener.filtering (items.size (), ((PdsDataset) nodeData.getDataset ()).size (),
-          true);
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void treeNodeSelected(NodeData nodeData)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.nodeData = nodeData;
+        if (nodeData.isPartitionedDataset()) {
+            setVisibleColumns(((PdsDataset) nodeData.getDataset()).getModuleType());
+            buildList(previousSelection(nodeData.getDataset()));
+        } else {
+            items.clear();
+            setPlaceholder(new Label("Not a Partitioned Dataset"));
+        }
+    }
 
-    // select a member
-    selectCatalogEntryItem (findItem (selectedName));
-  }
+    // ---------------------------------------------------------------------------------//
+    String previousSelection(Dataset dataset)
+    // ---------------------------------------------------------------------------------//
+    {
+        return (selectedMembers.containsKey(dataset) ? selectedMembers.get(dataset) : "");
+    }
 
-  // ---------------------------------------------------------------------------------//
-  private CatalogEntryItem findItem (String name)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (!name.isEmpty ())
-      for (CatalogEntryItem catalogEntryItem : items)
-        if (catalogEntryItem.getMemberName ().equals (name))
-          return catalogEntryItem;
-    return null;
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void setFilter(FilterStatus filterStatus)
+    // ---------------------------------------------------------------------------------//
+    {
+        Objects.requireNonNull(filterStatus);
+        if (filterStatus.matches(this.filterStatus))
+            return;
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void setFont (Font font)
-  // ---------------------------------------------------------------------------------//
-  {
-    DataColumn.font = font;
-    refresh ();
-  }
+        this.filterStatus = filterStatus;
 
-  // ---------------------------------------------------------------------------------//
-  private void selectCatalogEntryItem (CatalogEntryItem catalogEntryItem)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (items.size () == 0)
-      return;
+        if (nodeData != null && nodeData.isPartitionedDataset()) {
+            CatalogEntryItem selectedItem = getSelectionModel().getSelectedItem();
+            String selectedName = selectedItem == null ? "" : selectedItem.getMemberName();
+            buildList(selectedName);
+        }
+    }
 
-    if (catalogEntryItem == null)
-      getSelectionModel ().select (0);                      // select by index
-    else
-      getSelectionModel ().select (catalogEntryItem);       // select by item
+    // ---------------------------------------------------------------------------------//
+    private void buildList(String selectedName)
+    // ---------------------------------------------------------------------------------//
+    {
+        // setEmptyTableMessage
+        if (filterStatus.filterValue.isEmpty())
+            setPlaceholder(new Label(String.format("No members to display")));
+        else
+            setPlaceholder(new Label(
+                    String.format("No members contain '%s'", filterStatus.filterValue)));
 
-    scrollTo (getSelectionModel ().getSelectedIndex ());
-  }
+        // create filter
+        Filter filter =
+                ((PdsDataset) nodeData.getDataset()).getFilter(filterStatus.filterValue);
+        FilterMode filterMode =
+                filterStatus.filterValue.isEmpty() || !filterStatus.filterActive ? FilterMode.OFF
+                        : filterStatus.filterReverse ? FilterMode.REVERSED : FilterMode.ON;
+
+        // build items based on filter value
+        items.clear();
+        for (CatalogEntry catalogEntry : filter.getCatalogEntries(filterMode))
+            items.add(new CatalogEntryItem(catalogEntry));
+
+        // notify filter listeners
+        for (FilterActionListener listener : filterListeners)
+            listener.filtering(items.size(), ((PdsDataset) nodeData.getDataset()).size(),
+                    true);
+
+        // select a member
+        selectCatalogEntryItem(findItem(selectedName));
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private CatalogEntryItem findItem(String name)
+    // ---------------------------------------------------------------------------------//
+    {
+        if (!name.isEmpty())
+            for (CatalogEntryItem catalogEntryItem : items)
+                if (catalogEntryItem.getMemberName().equals(name))
+                    return catalogEntryItem;
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void setFont(Font font)
+    // ---------------------------------------------------------------------------------//
+    {
+        DataColumn.font = font;
+        refresh();
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private void selectCatalogEntryItem(CatalogEntryItem catalogEntryItem)
+    // ---------------------------------------------------------------------------------//
+    {
+        if (items.size() == 0)
+            return;
+
+        if (catalogEntryItem == null)
+            getSelectionModel().select(0);                      // select by index
+        else
+            getSelectionModel().select(catalogEntryItem);       // select by item
+
+        scrollTo(getSelectionModel().getSelectedIndex());
+    }
 }

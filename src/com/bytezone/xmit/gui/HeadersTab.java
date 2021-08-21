@@ -16,79 +16,75 @@ import javafx.scene.input.KeyCode;
 class HeadersTab extends XmitTextTab implements NodeDataListener
 // -----------------------------------------------------------------------------------//
 {
-  private NodeData nodeData;
+    private NodeData nodeData;
 
-  // ---------------------------------------------------------------------------------//
-  public HeadersTab (String title, KeyCode keyCode)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (title, keyCode);
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  List<String> getLines ()
-  // ---------------------------------------------------------------------------------//
-  {
-    List<String> lines = new ArrayList<> ();
-
-    if (nodeData == null || !nodeData.isDataset ())
-      return lines;
-
-    if (nodeData.isXmit ())
+    // ---------------------------------------------------------------------------------//
+    public HeadersTab(String title, KeyCode keyCode)
+    // ---------------------------------------------------------------------------------//
     {
-      for (var controlRecord : ((XmitReader) nodeData.getReader ()).getControlRecords ())
-        lines.add (controlRecord.toString ());
-    }
-    else if (nodeData.isTape ())
-    {
-      var pdsDataset = (PdsDataset) nodeData.getDataset ();
-
-      lines.add ("HDR1");
-      lines.add ("-----------------------------------------------------------");
-      String header1 = pdsDataset.getAwsTapeHeaders ().header1 ();
-      for (String line : header1.split ("\n"))
-        lines.add (line);
-      lines.add ("");
-
-      lines.add ("HDR2");
-      lines.add ("-----------------------------------------------------------");
-      String header2 = pdsDataset.getAwsTapeHeaders ().header2 ();
-      for (String line : header2.split ("\n"))
-        lines.add (line);
-      lines.add ("");
+        super(title, keyCode);
     }
 
-    if (nodeData.isPartitionedDataset ())
+    // ---------------------------------------------------------------------------------//
+    @Override
+    List<String> getLines()
+    // ---------------------------------------------------------------------------------//
     {
-      var pdsDataset = (PdsDataset) nodeData.getDataset ();
-      lines.add ("COPYR1");
-      lines.addAll (pdsDataset.getCopyR1 ().toLines ());
-      lines.add ("");
-      lines.add ("COPYR2");
-      lines.addAll (pdsDataset.getCopyR2 ().toLines ());
-      lines.add ("");
+        List<String> lines = new ArrayList<>();
 
-      lines.add (String.format ("%s Catalog Blocks:", pdsDataset.getName ()));
+        if (nodeData == null || !nodeData.isDataset())
+            return lines;
 
-      if (pdsDataset.isBasicModule ())
-        lines.add (BasicModule.getDebugHeader ());
-      else
-        lines.add (LoadModule.getDebugHeader ());
+        if (nodeData.isXmit()) {
+            for (var controlRecord : ((XmitReader) nodeData.getReader()).getControlRecords())
+                lines.add(controlRecord.toString());
+        } else if (nodeData.isTape()) {
+            var pdsDataset = (PdsDataset) nodeData.getDataset();
 
-      for (CatalogEntry catalogEntry : pdsDataset)
-        lines.add (catalogEntry.getDebugLine ());
+            lines.add("HDR1");
+            lines.add("-----------------------------------------------------------");
+            String header1 = pdsDataset.getAwsTapeHeaders().header1();
+            for (String line : header1.split("\n"))
+                lines.add(line);
+            lines.add("");
+
+            lines.add("HDR2");
+            lines.add("-----------------------------------------------------------");
+            String header2 = pdsDataset.getAwsTapeHeaders().header2();
+            for (String line : header2.split("\n"))
+                lines.add(line);
+            lines.add("");
+        }
+
+        if (nodeData.isPartitionedDataset()) {
+            var pdsDataset = (PdsDataset) nodeData.getDataset();
+            lines.add("COPYR1");
+            lines.addAll(pdsDataset.getCopyR1().toLines());
+            lines.add("");
+            lines.add("COPYR2");
+            lines.addAll(pdsDataset.getCopyR2().toLines());
+            lines.add("");
+
+            lines.add(String.format("%s Catalog Blocks:", pdsDataset.getName()));
+
+            if (pdsDataset.isBasicModule())
+                lines.add(BasicModule.getDebugHeader());
+            else
+                lines.add(LoadModule.getDebugHeader());
+
+            for (CatalogEntry catalogEntry : pdsDataset)
+                lines.add(catalogEntry.getDebugLine());
+        }
+
+        return lines;
     }
 
-    return lines;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void treeNodeSelected (NodeData nodeData)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.nodeData = nodeData;
-    refresh ();
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void treeNodeSelected(NodeData nodeData)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.nodeData = nodeData;
+        refresh();
+    }
 }

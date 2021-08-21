@@ -15,53 +15,49 @@ import javafx.scene.input.KeyCode;
 class CommentsTab extends XmitTextTab implements NodeDataListener
 // -----------------------------------------------------------------------------------//
 {
-  NodeData nodeData;
+    NodeData nodeData;
 
-  // ---------------------------------------------------------------------------------//
-  public CommentsTab (String title, KeyCode keyCode)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (title, keyCode);
-  }
-
-  // ---------------------------------------------------------------------------------//
-  @Override
-  List<String> getLines ()
-  // ---------------------------------------------------------------------------------//
-  {
-    List<String> lines = new ArrayList<> ();
-
-    if (nodeData == null || !nodeData.isDataset ())
-      return lines;
-
-    Reader reader = nodeData.getReader ();
-
-    if (reader.size () > 1)
+    // ---------------------------------------------------------------------------------//
+    public CommentsTab(String title, KeyCode keyCode)
+    // ---------------------------------------------------------------------------------//
     {
-      Dataset firstDataset = reader.getDataset (0);
-      if (firstDataset.isPhysicalSequential ())
-      {
-        FlatFile file = ((PsDataset) firstDataset).getFlatFile ();
-        for (String s : file.getLines ())
-          lines.add (s);
-        lines.add ("");
-      }
-      else
-        lines.add (
-            "Unexpected disposition for file #1: " + firstDataset.getDisposition ());
+        super(title, keyCode);
     }
-    else
-      lines.add ("No comments");
 
-    return lines;
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    List<String> getLines()
+    // ---------------------------------------------------------------------------------//
+    {
+        List<String> lines = new ArrayList<>();
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void treeNodeSelected (NodeData nodeData)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.nodeData = nodeData;
-    refresh ();
-  }
+        if (nodeData == null || !nodeData.isDataset())
+            return lines;
+
+        Reader reader = nodeData.getReader();
+
+        if (reader.size() > 1) {
+            Dataset firstDataset = reader.getDataset(0);
+            if (firstDataset.isPhysicalSequential()) {
+                FlatFile file = ((PsDataset) firstDataset).getFlatFile();
+                for (String s : file.getLines())
+                    lines.add(s);
+                lines.add("");
+            } else
+                lines.add(
+                        "Unexpected disposition for file #1: " + firstDataset.getDisposition());
+        } else
+            lines.add("No comments");
+
+        return lines;
+    }
+
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void treeNodeSelected(NodeData nodeData)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.nodeData = nodeData;
+        refresh();
+    }
 }

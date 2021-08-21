@@ -11,45 +11,44 @@ import javafx.scene.text.Text;
 class TextFormatterJcl extends TextFormatter
 // -----------------------------------------------------------------------------------//
 {
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public List<Text> format (List<String> lines)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (usingFilter () || !Utility.isJCL (lines))     // truncation buggers this
-      return super.format (lines);
-
-    textList.clear ();
-
-    int lineNo = 1;
-    for (String line : lines)
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public List<Text> format(List<String> lines)
+    // ---------------------------------------------------------------------------------//
     {
-      if (showLines)
-        addText (String.format ("%06d ", lineNo++), numberColor);
+        if (usingFilter() || !Utility.isJCL(lines))     // truncation buggers this
+            return super.format(lines);
 
-      if (line.startsWith ("//*"))                // line comment
-      {
-        addTextNewLine (line, Color.GRAY);
-        continue;
-      }
+        textList.clear();
 
-      if (line.matches ("^[^/].*?"))              // non-JCL (instream data)
-      {
-        addTextNewLine (line, Color.CHOCOLATE);
-        continue;
-      }
+        int lineNo = 1;
+        for (String line : lines) {
+            if (showLines)
+                addText(String.format("%06d ", lineNo++), numberColor);
 
-      if (highlightAfter (line, "DSN=", Color.DEEPPINK))
-        continue;
+            if (line.startsWith("//*"))                // line comment
+            {
+                addTextNewLine(line, Color.GRAY);
+                continue;
+            }
 
-      if (highlightAfter (line, "PGM=", Color.BLUE))
-        continue;
+            if (line.matches("^[^/].*?"))              // non-JCL (instream data)
+            {
+                addTextNewLine(line, Color.CHOCOLATE);
+                continue;
+            }
 
-      addTextNewLine (line, baseColor);
+            if (highlightAfter(line, "DSN=", Color.DEEPPINK))
+                continue;
+
+            if (highlightAfter(line, "PGM=", Color.BLUE))
+                continue;
+
+            addTextNewLine(line, baseColor);
+        }
+
+        removeLastNewLine();
+
+        return textList;
     }
-
-    removeLastNewLine ();
-
-    return textList;
-  }
 }

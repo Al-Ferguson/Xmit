@@ -33,353 +33,340 @@ import javafx.util.Duration;
 public class XmitApp extends Application
 // -----------------------------------------------------------------------------------//
 {
-  private static final String PREFS_ROOT_FOLDER = "RootFolder";
-  private final Preferences prefs = Preferences.userNodeForPackage (this.getClass ());
+    private static final String PREFS_ROOT_FOLDER = "RootFolder";
+    private final Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
-  private Stage primaryStage;
-  private String rootFolderName;
+    private Stage primaryStage;
+    private String rootFolderName;
 
-  private XmitTree xmitTree;
-  private TreePane treePane;
+    private XmitTree xmitTree;
+    private TreePane treePane;
 
-  private final OutputTabPane outputTabPane = new OutputTabPane ("Output");
-  private final TableTabPane tableTabPane = new TableTabPane ("Table");
+    private final OutputTabPane outputTabPane = new OutputTabPane("Output");
+    private final TableTabPane tableTabPane = new TableTabPane("Table");
 
-  private final FontManager fontManager = new FontManager ();
-  private final FilterManager filterManager = new FilterManager ();
+    private final FontManager fontManager = new FontManager();
+    private final FilterManager filterManager = new FilterManager();
 
-  private final MenuBar menuBar = new MenuBar ();
-  private final FileMenu fileMenu = new FileMenu ();
-  private final ViewMenu viewMenu = new ViewMenu ();
+    private final MenuBar menuBar = new MenuBar();
+    private final FileMenu fileMenu = new FileMenu();
+    private final ViewMenu viewMenu = new ViewMenu();
 
-  private final SplitPane splitPane = new SplitPane ();
-  private final WindowStatus windowStatus = new WindowStatus ();
+    private final SplitPane splitPane = new SplitPane();
+    private final WindowStatus windowStatus = new WindowStatus();
 
-  private final List<SaveState> saveStateList = new ArrayList<> ();
-  private final StatusBar statusBar = new StatusBar ();
+    private final List<SaveState> saveStateList = new ArrayList<>();
+    private final StatusBar statusBar = new StatusBar();
 
-  private boolean debug = false;
+    private boolean debug = false;
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void start (Stage primaryStage) throws Exception
-  // ---------------------------------------------------------------------------------//
-  {
-    checkParameters ();
-
-    this.primaryStage = primaryStage;
-    primaryStage.setTitle ("XmitApp");
-    Scene scene = new Scene (createContent ());
-    primaryStage.setScene (scene);
-
-    scene.setOnKeyPressed (e -> keyPressed (e));
-
-    //    if (false)
-    //    {
-    //      Desktop desktop = Desktop.getDesktop ();
-    //      System.out.println (Desktop.isDesktopSupported ());
-    //      System.out.println (desktop.isSupported (Action.APP_ABOUT));
-    //      desktop.setAboutHandler (e -> squawk ("About dialog"));
-    //      desktop.setPreferencesHandler (e -> squawk ("Preferences dialog"));
-    //      desktop.setQuitHandler ( (e, r) -> squawk ("Quit dialog"));
-    //    }
-
-    primaryStage.show ();
-
-    // this must happen after show()
-    splitPane.setDividerPosition (0, windowStatus.dividerPosition1);
-    splitPane.setDividerPosition (1, windowStatus.dividerPosition2);
-
-    Timeline clock =
-        new Timeline (new KeyFrame (Duration.seconds (2), new EventHandler<ActionEvent> ()
-        {
-          @Override
-          public void handle (ActionEvent event)
-          {
-            statusBar.tick ();
-          }
-        }));
-    clock.setCycleCount (Timeline.INDEFINITE);
-    clock.play ();
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private Parent createContent ()
-  // ---------------------------------------------------------------------------------//
-  {
-    // place menubar
-    final String os = System.getProperty ("os.name");
-    if (os != null && os.startsWith ("Mac"))
-      menuBar.setUseSystemMenuBar (true);
-
-    // get root folder
-    validateRootFolderOrExit ();
-
-    xmitTree = new XmitTree (new XmitTreeItem (new NodeData (new File (rootFolderName))));
-    treePane = new TreePane (xmitTree);
-
-    TableHeaderBar tableHeaderBar = new TableHeaderBar ();
-    OutputHeaderBar outputHeaderBar = new OutputHeaderBar ();
-
-    splitPane.getItems ().addAll (treePane,
-        createBorderPane (tableHeaderBar, tableTabPane),
-        createBorderPane (outputHeaderBar, outputTabPane));
-
-    XmitTable xmitTable = tableTabPane.membersTab.xmitTable;
-
-    // menu listeners
-    viewMenu.setExclusiveFilterAction (e -> filterManager.toggleFilterExclusion ());
-    viewMenu.setFilterAction (e -> filterManager.showWindow ());
-    viewMenu.setFontAction (e -> fontManager.showWindow ());
-    fileMenu.setRootAction (e -> changeRootFolder ());
-
-    // codepage listeners
-    viewMenu.addCodePageListener (outputTabPane.outputTab);
-    viewMenu.addCodePageListener (outputTabPane.hexTab);
-    viewMenu.addCodePageListener (statusBar);
-
-    // lines listeners
-    viewMenu.addShowLinesListener (statusBar);
-    viewMenu.addShowLinesListener (outputHeaderBar);
-    viewMenu.addShowLinesListener (outputTabPane.outputTab);
-
-    // font change listeners
-    fontManager.addFontChangeListener (xmitTree);
-    fontManager.addFontChangeListener (outputTabPane);
-    fontManager.addFontChangeListener (tableTabPane);
-    fontManager.addFontChangeListener (statusBar);
-
-    // filter change listeners (filter parameters)
-    filterManager.addFilterListener (statusBar);
-    filterManager.addFilterListener (tableHeaderBar);
-    filterManager.addFilterListener (outputTabPane.outputTab);
-    filterManager.addFilterListener (xmitTable);
-
-    // filter action listeners (filter results)
-    xmitTable.addFilterListener (tableHeaderBar);
-
-    // treeview listeners
-    xmitTree.addListener (fileMenu);
-    xmitTree.addListener (outputTabPane.hexTab);
-    xmitTree.addListener (outputTabPane.blocksTab);
-    xmitTree.addListener (outputTabPane.outputTab);
-    xmitTree.addListener (outputHeaderBar);
-    xmitTree.addListener (tableHeaderBar);
-    xmitTree.addListener (tableTabPane.headersTab);
-    xmitTree.addListener (tableTabPane.commentsTab);
-    xmitTree.addListener (xmitTable);
-
-    // table listeners
-    xmitTable.addListener (outputTabPane.hexTab);
-    xmitTable.addListener (outputTabPane.blocksTab);
-    xmitTable.addListener (outputTabPane.outputTab);
-    xmitTable.addListener (outputHeaderBar);
-    xmitTable.addListener (fileMenu);
-
-    BorderPane mainPane = new BorderPane ();
-    mainPane.setCenter (splitPane);
-
-    // status bar
-    mainPane.setBottom (statusBar);
-
-    // add menus
-    mainPane.setTop (menuBar);
-    ObservableList<Menu> menus = menuBar.getMenus ();
-    menus.addAll (fileMenu.getMenu (), viewMenu.getMenu ());
-
-    fileMenu.setOutputWriter (outputTabPane.outputTab);
-
-    // exit action
-    primaryStage.setOnCloseRequest (e -> exit ());
-
-    // ensure viewMenu (codepage) is set before xmitTree
-    saveStateList.addAll (Arrays.asList (filterManager, outputTabPane, fileMenu, viewMenu,
-        xmitTree, tableTabPane, fontManager));
-
-    restore ();
-
-    return mainPane;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private BorderPane createBorderPane (HeaderBar headerBar, TabPane tabPane)
-  // ---------------------------------------------------------------------------------//
-  {
-    BorderPane borderPane = new BorderPane ();
-    borderPane.setTop (headerBar);
-    borderPane.setCenter (tabPane);
-    return borderPane;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void keyPressed (KeyEvent keyEvent)
-  // ---------------------------------------------------------------------------------//
-  {
-    switch (keyEvent.getCode ())
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void start(Stage primaryStage) throws Exception
+    // ---------------------------------------------------------------------------------//
     {
-      case B:
-      case X:
-      case O:
-        outputTabPane.keyPressed (keyEvent);
-        keyEvent.consume ();
-        break;
+        checkParameters();
 
-      case H:
-      case M:
-      case C:
-        tableTabPane.keyPressed (keyEvent);
-        keyEvent.consume ();
-        break;
+        this.primaryStage = primaryStage;
+        primaryStage.setTitle("XmitApp");
+        Scene scene = new Scene(createContent());
+        primaryStage.setScene(scene);
 
-      case COMMA:
-      case PERIOD:
-        fontManager.keyPressed (keyEvent);
-        keyEvent.consume ();
-        break;
+        scene.setOnKeyPressed(e -> keyPressed(e));
 
-      case F:
-        filterManager.keyPressed (keyEvent);
-        keyEvent.consume ();
-        break;
+        //    if (false)
+        //    {
+        //      Desktop desktop = Desktop.getDesktop ();
+        //      System.out.println (Desktop.isDesktopSupported ());
+        //      System.out.println (desktop.isSupported (Action.APP_ABOUT));
+        //      desktop.setAboutHandler (e -> squawk ("About dialog"));
+        //      desktop.setPreferencesHandler (e -> squawk ("Preferences dialog"));
+        //      desktop.setQuitHandler ( (e, r) -> squawk ("Quit dialog"));
+        //    }
 
-      default:
-        break;
-    }
-  }
+        primaryStage.show();
 
-  // ---------------------------------------------------------------------------------//
-  private void setWindow ()
-  // ---------------------------------------------------------------------------------//
-  {
-    primaryStage.setWidth (1200);
-    primaryStage.setHeight (800);
-    primaryStage.centerOnScreen ();
-  }
+        // this must happen after show()
+        splitPane.setDividerPosition(0, windowStatus.dividerPosition1);
+        splitPane.setDividerPosition(1, windowStatus.dividerPosition2);
 
-  // ---------------------------------------------------------------------------------//
-  private void restore ()
-  // ---------------------------------------------------------------------------------//
-  {
-    for (SaveState saveState : saveStateList)
-      saveState.restore (prefs);
-
-    windowStatus.restore (prefs);
-
-    if (windowStatus.width <= 0 || windowStatus.height <= 22 || windowStatus.x < 0
-        || windowStatus.y < 0)
-      setWindow ();
-    else
-    {
-      primaryStage.setWidth (windowStatus.width);
-      primaryStage.setHeight (windowStatus.height);
-      primaryStage.setX (windowStatus.x);
-      primaryStage.setY (windowStatus.y);
-    }
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void exit ()
-  // ---------------------------------------------------------------------------------//
-  {
-    windowStatus.setLocation (primaryStage);
-    windowStatus.setDividers (splitPane);
-
-    windowStatus.save (prefs);
-
-    for (SaveState saveState : saveStateList)
-      saveState.save (prefs);
-
-    Platform.exit ();
-  }
-
-  // ---------------------------------------------------------------------------------//
-  void changeRootFolder ()
-  // ---------------------------------------------------------------------------------//
-  {
-    if (setRootFolder ())
-      treePane
-          .setRootFolder (new XmitTreeItem (new NodeData (new File (rootFolderName))));
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void validateRootFolderOrExit ()
-  // ---------------------------------------------------------------------------------//
-  {
-    rootFolderName = prefs.get (PREFS_ROOT_FOLDER, "");
-    if (rootFolderName.isEmpty ())
-    {
-      Utility.showAlert (AlertType.INFORMATION, "XMIT folder",
-          "The XMIT file folder has not yet been defined. Please choose the "
-              + "TOP LEVEL FOLDER where you store your XMIT files. This folder "
-              + "may contain subfolders. It can also be changed at any time.");
-    }
-    else
-    {
-      File file = new File (rootFolderName);
-      if (!file.exists ())
-        rootFolderName = "";
+        Timeline clock =
+                new Timeline(new KeyFrame(Duration.seconds(2), new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        statusBar.tick();
+                    }
+                }));
+        clock.setCycleCount(Timeline.INDEFINITE);
+        clock.play();
     }
 
-    if (rootFolderName.isEmpty () && !setRootFolder ())
+    // ---------------------------------------------------------------------------------//
+    private Parent createContent()
+    // ---------------------------------------------------------------------------------//
     {
-      Platform.exit ();
-      System.exit (0);
+        // place menubar
+        final String os = System.getProperty("os.name");
+        if (os != null && os.startsWith("Mac"))
+            menuBar.setUseSystemMenuBar(true);
+
+        // get root folder
+        validateRootFolderOrExit();
+
+        xmitTree = new XmitTree(new XmitTreeItem(new NodeData(new File(rootFolderName))));
+        treePane = new TreePane(xmitTree);
+
+        TableHeaderBar tableHeaderBar = new TableHeaderBar();
+        OutputHeaderBar outputHeaderBar = new OutputHeaderBar();
+
+        splitPane.getItems().addAll(treePane,
+                createBorderPane(tableHeaderBar, tableTabPane),
+                createBorderPane(outputHeaderBar, outputTabPane));
+
+        XmitTable xmitTable = tableTabPane.membersTab.xmitTable;
+
+        // menu listeners
+        viewMenu.setExclusiveFilterAction(e -> filterManager.toggleFilterExclusion());
+        viewMenu.setFilterAction(e -> filterManager.showWindow());
+        viewMenu.setFontAction(e -> fontManager.showWindow());
+        fileMenu.setRootAction(e -> changeRootFolder());
+
+        // codepage listeners
+        viewMenu.addCodePageListener(outputTabPane.outputTab);
+        viewMenu.addCodePageListener(outputTabPane.hexTab);
+        viewMenu.addCodePageListener(statusBar);
+
+        // lines listeners
+        viewMenu.addShowLinesListener(statusBar);
+        viewMenu.addShowLinesListener(outputHeaderBar);
+        viewMenu.addShowLinesListener(outputTabPane.outputTab);
+
+        // font change listeners
+        fontManager.addFontChangeListener(xmitTree);
+        fontManager.addFontChangeListener(outputTabPane);
+        fontManager.addFontChangeListener(tableTabPane);
+        fontManager.addFontChangeListener(statusBar);
+
+        // filter change listeners (filter parameters)
+        filterManager.addFilterListener(statusBar);
+        filterManager.addFilterListener(tableHeaderBar);
+        filterManager.addFilterListener(outputTabPane.outputTab);
+        filterManager.addFilterListener(xmitTable);
+
+        // filter action listeners (filter results)
+        xmitTable.addFilterListener(tableHeaderBar);
+
+        // treeview listeners
+        xmitTree.addListener(fileMenu);
+        xmitTree.addListener(outputTabPane.hexTab);
+        xmitTree.addListener(outputTabPane.blocksTab);
+        xmitTree.addListener(outputTabPane.outputTab);
+        xmitTree.addListener(outputHeaderBar);
+        xmitTree.addListener(tableHeaderBar);
+        xmitTree.addListener(tableTabPane.headersTab);
+        xmitTree.addListener(tableTabPane.commentsTab);
+        xmitTree.addListener(xmitTable);
+
+        // table listeners
+        xmitTable.addListener(outputTabPane.hexTab);
+        xmitTable.addListener(outputTabPane.blocksTab);
+        xmitTable.addListener(outputTabPane.outputTab);
+        xmitTable.addListener(outputHeaderBar);
+        xmitTable.addListener(fileMenu);
+
+        BorderPane mainPane = new BorderPane();
+        mainPane.setCenter(splitPane);
+
+        // status bar
+        mainPane.setBottom(statusBar);
+
+        // add menus
+        mainPane.setTop(menuBar);
+        ObservableList<Menu> menus = menuBar.getMenus();
+        menus.addAll(fileMenu.getMenu(), viewMenu.getMenu());
+
+        fileMenu.setOutputWriter(outputTabPane.outputTab);
+
+        // exit action
+        primaryStage.setOnCloseRequest(e -> exit());
+
+        // ensure viewMenu (codepage) is set before xmitTree
+        saveStateList.addAll(Arrays.asList(filterManager, outputTabPane, fileMenu, viewMenu,
+                xmitTree, tableTabPane, fontManager));
+
+        restore();
+
+        return mainPane;
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  private boolean setRootFolder ()
-  // ---------------------------------------------------------------------------------//
-  {
-    DirectoryChooser directoryChooser = new DirectoryChooser ();
-    directoryChooser.setTitle ("Set XMIT file folder");
-
-    String previousRootFolderName = prefs.get (PREFS_ROOT_FOLDER, "");
-    if (previousRootFolderName.isEmpty ())
-      directoryChooser.setInitialDirectory (new File (System.getProperty ("user.home")));
-    else
-      directoryChooser.setInitialDirectory (new File (previousRootFolderName));
-
-    File file = directoryChooser.showDialog (null);
-    if (file != null && file.isDirectory ())
+    // ---------------------------------------------------------------------------------//
+    private BorderPane createBorderPane(HeaderBar headerBar, TabPane tabPane)
+    // ---------------------------------------------------------------------------------//
     {
-      rootFolderName = file.getAbsolutePath ();
-      prefs.put (PREFS_ROOT_FOLDER, rootFolderName);
-      return true;
+        BorderPane borderPane = new BorderPane();
+        borderPane.setTop(headerBar);
+        borderPane.setCenter(tabPane);
+        return borderPane;
     }
 
-    return false;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void checkParameters ()
-  // ---------------------------------------------------------------------------------//
-  {
-    for (String s : getParameters ().getUnnamed ())
+    // ---------------------------------------------------------------------------------//
+    private void keyPressed(KeyEvent keyEvent)
+    // ---------------------------------------------------------------------------------//
     {
-      System.out.printf ("Parameter: %s%n", s);
-      if ("-debug".equals (s))
-        debug = true;
-      else if ("-reset".equals (s))
-        try
-        {
-          prefs.clear ();
-          System.out.println ("Preferences reset");
+        switch (keyEvent.getCode()) {
+            case B:
+            case X:
+            case O:
+                outputTabPane.keyPressed(keyEvent);
+                keyEvent.consume();
+                break;
+
+            case H:
+            case M:
+            case C:
+                tableTabPane.keyPressed(keyEvent);
+                keyEvent.consume();
+                break;
+
+            case COMMA:
+            case PERIOD:
+                fontManager.keyPressed(keyEvent);
+                keyEvent.consume();
+                break;
+
+            case F:
+                filterManager.keyPressed(keyEvent);
+                keyEvent.consume();
+                break;
+
+            default:
+                break;
         }
-        catch (BackingStoreException e1)
-        {
-          System.out.println ("Preferences NOT reset");
-          e1.printStackTrace ();
-        }
-      else
-        System.out.printf ("Unknown parameter: %s%n", s);
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  public static void main (String[] args)
-  // ---------------------------------------------------------------------------------//
-  {
-    Application.launch (args);
-  }
+    // ---------------------------------------------------------------------------------//
+    private void setWindow()
+    // ---------------------------------------------------------------------------------//
+    {
+        primaryStage.setWidth(1200);
+        primaryStage.setHeight(800);
+        primaryStage.centerOnScreen();
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private void restore()
+    // ---------------------------------------------------------------------------------//
+    {
+        for (SaveState saveState : saveStateList)
+            saveState.restore(prefs);
+
+        windowStatus.restore(prefs);
+
+        if (windowStatus.width <= 0 || windowStatus.height <= 22 || windowStatus.x < 0
+                || windowStatus.y < 0)
+            setWindow();
+        else {
+            primaryStage.setWidth(windowStatus.width);
+            primaryStage.setHeight(windowStatus.height);
+            primaryStage.setX(windowStatus.x);
+            primaryStage.setY(windowStatus.y);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private void exit()
+    // ---------------------------------------------------------------------------------//
+    {
+        windowStatus.setLocation(primaryStage);
+        windowStatus.setDividers(splitPane);
+
+        windowStatus.save(prefs);
+
+        for (SaveState saveState : saveStateList)
+            saveState.save(prefs);
+
+        Platform.exit();
+    }
+
+    // ---------------------------------------------------------------------------------//
+    void changeRootFolder()
+    // ---------------------------------------------------------------------------------//
+    {
+        if (setRootFolder())
+            treePane
+                    .setRootFolder(new XmitTreeItem(new NodeData(new File(rootFolderName))));
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private void validateRootFolderOrExit()
+    // ---------------------------------------------------------------------------------//
+    {
+        rootFolderName = prefs.get(PREFS_ROOT_FOLDER, "");
+        if (rootFolderName.isEmpty()) {
+            Utility.showAlert(AlertType.INFORMATION, "XMIT folder",
+                    "The XMIT file folder has not yet been defined. Please choose the "
+                            + "TOP LEVEL FOLDER where you store your XMIT files. This folder "
+                            + "may contain subfolders. It can also be changed at any time.");
+        } else {
+            File file = new File(rootFolderName);
+            if (!file.exists())
+                rootFolderName = "";
+        }
+
+        if (rootFolderName.isEmpty() && !setRootFolder()) {
+            Platform.exit();
+            System.exit(0);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private boolean setRootFolder()
+    // ---------------------------------------------------------------------------------//
+    {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Set XMIT file folder");
+
+        String previousRootFolderName = prefs.get(PREFS_ROOT_FOLDER, "");
+        if (previousRootFolderName.isEmpty())
+            directoryChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        else
+            directoryChooser.setInitialDirectory(new File(previousRootFolderName));
+
+        File file = directoryChooser.showDialog(null);
+        if (file != null && file.isDirectory()) {
+            rootFolderName = file.getAbsolutePath();
+            prefs.put(PREFS_ROOT_FOLDER, rootFolderName);
+            return true;
+        }
+
+        return false;
+    }
+
+    // ---------------------------------------------------------------------------------//
+    private void checkParameters()
+    // ---------------------------------------------------------------------------------//
+    {
+        for (String s : getParameters().getUnnamed()) {
+            System.out.printf("Parameter: %s%n", s);
+            if ("-debug".equals(s))
+                debug = true;
+            else if ("-reset".equals(s))
+                try {
+                    prefs.clear();
+                    System.out.println("Preferences reset");
+                } catch (BackingStoreException e1) {
+                    System.out.println("Preferences NOT reset");
+                    e1.printStackTrace();
+                }
+            else
+                System.out.printf("Unknown parameter: %s%n", s);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------//
+    public static void main(String[] args)
+    // ---------------------------------------------------------------------------------//
+    {
+        Application.launch(args);
+    }
 }

@@ -12,65 +12,65 @@ import javafx.scene.input.KeyCode;
 
 // -----------------------------------------------------------------------------------//
 class HexTab extends XmitTextTab
-    implements NodeDataListener, TableItemSelectionListener, CodePageSelectedListener
+        implements NodeDataListener, TableItemSelectionListener, CodePageSelectedListener
 // -----------------------------------------------------------------------------------//
 {
-  private static final int MAX_HEX_BYTES = 0x20_000;
+    private static final int MAX_HEX_BYTES = 0x20_000;
 
-  NodeData nodeData;
-  DataFile dataFile;
+    NodeData nodeData;
+    DataFile dataFile;
 
-  // ---------------------------------------------------------------------------------//
-  public HexTab (String title, KeyCode keyCode)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (title, keyCode);
-    textFormatter = new TextFormatterHex ();
-  }
+    // ---------------------------------------------------------------------------------//
+    public HexTab(String title, KeyCode keyCode)
+    // ---------------------------------------------------------------------------------//
+    {
+        super(title, keyCode);
+        textFormatter = new TextFormatterHex();
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  List<String> getLines ()
-  // ---------------------------------------------------------------------------------//
-  {
-    List<String> lines = new ArrayList<> ();
+    // ---------------------------------------------------------------------------------//
+    @Override
+    List<String> getLines()
+    // ---------------------------------------------------------------------------------//
+    {
+        List<String> lines = new ArrayList<>();
 
-    if (dataFile == null)
-      return lines;
+        if (dataFile == null)
+            return lines;
 
-    byte[] buffer = dataFile.getDataBuffer ();
-    return Utility.getHexDumpLines (buffer, 0, Math.min (MAX_HEX_BYTES, buffer.length));
-  }
+        byte[] buffer = dataFile.getDataBuffer();
+        return Utility.getHexDumpLines(buffer, 0, Math.min(MAX_HEX_BYTES, buffer.length));
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void treeNodeSelected (NodeData nodeData)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.nodeData = nodeData;
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void treeNodeSelected(NodeData nodeData)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.nodeData = nodeData;
 
-    if (nodeData.isPhysicalSequentialDataset ())
-      dataFile = nodeData.getDataFile ();
-    else
-      dataFile = null;
+        if (nodeData.isPhysicalSequentialDataset())
+            dataFile = nodeData.getDataFile();
+        else
+            dataFile = null;
 
-    refresh ();
-  }
+        refresh();
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void tableItemSelected (CatalogEntry catalogEntry)
-  // ---------------------------------------------------------------------------------//
-  {
-    dataFile = catalogEntry == null ? null : catalogEntry.getMember ();
-    refresh ();
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void tableItemSelected(CatalogEntry catalogEntry)
+    // ---------------------------------------------------------------------------------//
+    {
+        dataFile = catalogEntry == null ? null : catalogEntry.getMember();
+        refresh();
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void selectCodePage (String codePageName)
-  // ---------------------------------------------------------------------------------//
-  {
-    refresh ();
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void selectCodePage(String codePageName)
+    // ---------------------------------------------------------------------------------//
+    {
+        refresh();
+    }
 }

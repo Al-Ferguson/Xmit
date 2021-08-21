@@ -6,21 +6,21 @@ import javafx.scene.input.KeyCode;
 class OutputTabPane extends XmitTabPane
 // -----------------------------------------------------------------------------------//
 {
-  final BlocksTab blocksTab = new BlocksTab ("Blocks", KeyCode.B);
-  final HexTab hexTab = new HexTab ("Hex", KeyCode.X);
-  final OutputTab outputTab = new OutputTab ("Output", KeyCode.O);
+    final BlocksTab blocksTab = new BlocksTab("Blocks", KeyCode.B);
+    final HexTab hexTab = new HexTab("Hex", KeyCode.X);
+    final OutputTab outputTab = new OutputTab("Output", KeyCode.O);
 
-  // ---------------------------------------------------------------------------------//
-  OutputTabPane (String prefsId)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (prefsId);
+    // ---------------------------------------------------------------------------------//
+    OutputTabPane(String prefsId)
+    // ---------------------------------------------------------------------------------//
+    {
+        super(prefsId);
 
-    add (blocksTab);
-    add (hexTab);
-    add (outputTab);
-    setDefaultTab (2);
+        add(blocksTab);
+        add(hexTab);
+        add(outputTab);
+        setDefaultTab(2);
 
-    getTabs ().addAll (blocksTab, hexTab, outputTab);
-  }
+        getTabs().addAll(blocksTab, hexTab, outputTab);
+    }
 }

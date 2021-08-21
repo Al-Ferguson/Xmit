@@ -14,94 +14,93 @@ import javafx.scene.text.Font;
 
 // -----------------------------------------------------------------------------------//
 abstract class XmitTabPane extends TabPane                                            //
-    implements FontChangeListener, SaveState
+        implements FontChangeListener, SaveState
 // -----------------------------------------------------------------------------------//
 {
-  private final String PREFS_LAST_TAB;
+    private final String PREFS_LAST_TAB;
 
-  private static final int TAB_WIDTH = 100;
-  private final List<XmitTab> xmitTabs = new ArrayList<> ();
-  private int defaultTab;
+    private static final int TAB_WIDTH = 100;
+    private final List<XmitTab> xmitTabs = new ArrayList<>();
+    private int defaultTab;
 
-  // ---------------------------------------------------------------------------------//
-  public XmitTabPane (String prefsId)
-  // ---------------------------------------------------------------------------------//
-  {
-    setSide (Side.BOTTOM);
-    setTabClosingPolicy (TabClosingPolicy.UNAVAILABLE);
-    setTabMinWidth (TAB_WIDTH);
-    setFocusTraversable (false);
+    // ---------------------------------------------------------------------------------//
+    public XmitTabPane(String prefsId)
+    // ---------------------------------------------------------------------------------//
+    {
+        setSide(Side.BOTTOM);
+        setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+        setTabMinWidth(TAB_WIDTH);
+        setFocusTraversable(false);
 
-    PREFS_LAST_TAB = "lastTab" + prefsId;
+        PREFS_LAST_TAB = "lastTab" + prefsId;
 
-    getSelectionModel ().selectedItemProperty ().addListener (this::select);
-  }
+        getSelectionModel().selectedItemProperty().addListener(this::select);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  private void select (ObservableValue<? extends Tab> obs, Tab prev, Tab next)
-  // ---------------------------------------------------------------------------------//
-  {
-    if (prev != null)
-      ((XmitTab) prev).active = false;
+    // ---------------------------------------------------------------------------------//
+    private void select(ObservableValue<? extends Tab> obs, Tab prev, Tab next)
+    // ---------------------------------------------------------------------------------//
+    {
+        if (prev != null)
+            ((XmitTab) prev).active = false;
 
-    ((XmitTab) next).active = true;
-    ((XmitTab) next).update ();
-    assert ((XmitTab) next).valid == true;
-  }
+        ((XmitTab) next).active = true;
+        ((XmitTab) next).update();
+        assert ((XmitTab) next).valid == true;
+    }
 
-  // ---------------------------------------------------------------------------------//
-  void add (XmitTab tab)
-  // ---------------------------------------------------------------------------------//
-  {
-    xmitTabs.add (tab);
-  }
+    // ---------------------------------------------------------------------------------//
+    void add(XmitTab tab)
+    // ---------------------------------------------------------------------------------//
+    {
+        xmitTabs.add(tab);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  void keyPressed (KeyEvent keyEvent)
-  // ---------------------------------------------------------------------------------//
-  {
-    KeyCode keyCode = keyEvent.getCode ();
-    for (XmitTab xmitTab : xmitTabs)
-      if (xmitTab.keyCode == keyCode)
-      {
-        getSelectionModel ().select (xmitTab);
-        break;
-      }
-  }
+    // ---------------------------------------------------------------------------------//
+    void keyPressed(KeyEvent keyEvent)
+    // ---------------------------------------------------------------------------------//
+    {
+        KeyCode keyCode = keyEvent.getCode();
+        for (XmitTab xmitTab : xmitTabs)
+            if (xmitTab.keyCode == keyCode) {
+                getSelectionModel().select(xmitTab);
+                break;
+            }
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  public void setFont (Font font)
-  // ---------------------------------------------------------------------------------//
-  {
-    for (XmitTab xmitTab : xmitTabs)
-      xmitTab.setFont (font);
-  }
+    // ---------------------------------------------------------------------------------//
+    @Override
+    public void setFont(Font font)
+    // ---------------------------------------------------------------------------------//
+    {
+        for (XmitTab xmitTab : xmitTabs)
+            xmitTab.setFont(font);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  void setDefaultTab (int defaultTab)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.defaultTab = defaultTab;
-  }
+    // ---------------------------------------------------------------------------------//
+    void setDefaultTab(int defaultTab)
+    // ---------------------------------------------------------------------------------//
+    {
+        this.defaultTab = defaultTab;
+    }
 
-  //----------------------------------------------------------------------------------- //
-  @Override
-  public void restore (Preferences prefs)
-  //----------------------------------------------------------------------------------- //
-  {
-    getSelectionModel ().select (prefs.getInt (PREFS_LAST_TAB, defaultTab));
-    for (XmitTab xmitTab : xmitTabs)
-      xmitTab.restore (prefs);
-  }
+    //----------------------------------------------------------------------------------- //
+    @Override
+    public void restore(Preferences prefs)
+    //----------------------------------------------------------------------------------- //
+    {
+        getSelectionModel().select(prefs.getInt(PREFS_LAST_TAB, defaultTab));
+        for (XmitTab xmitTab : xmitTabs)
+            xmitTab.restore(prefs);
+    }
 
-  //----------------------------------------------------------------------------------- //
-  @Override
-  public void save (Preferences prefs)
-  //----------------------------------------------------------------------------------- //
-  {
-    prefs.putInt (PREFS_LAST_TAB, getSelectionModel ().getSelectedIndex ());
-    for (XmitTab xmitTab : xmitTabs)
-      xmitTab.save (prefs);
-  }
+    //----------------------------------------------------------------------------------- //
+    @Override
+    public void save(Preferences prefs)
+    //----------------------------------------------------------------------------------- //
+    {
+        prefs.putInt(PREFS_LAST_TAB, getSelectionModel().getSelectedIndex());
+        for (XmitTab xmitTab : xmitTabs)
+            xmitTab.save(prefs);
+    }
 }

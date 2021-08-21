@@ -14,55 +14,55 @@ import javafx.scene.text.TextFlow;
 abstract class XmitTextTab extends XmitTab
 // -----------------------------------------------------------------------------------//
 {
-  private final TextFlow textFlow = new TextFlow ();
-  private final ScrollPane scrollPane = new ScrollPane (textFlow);
+    private final TextFlow textFlow = new TextFlow();
+    private final ScrollPane scrollPane = new ScrollPane(textFlow);
 
-  TextFormatter textFormatter = new TextFormatter ();
+    TextFormatter textFormatter = new TextFormatter();
 
-  // ---------------------------------------------------------------------------------//
-  public XmitTextTab (String title, KeyCode keyCode)
-  // ---------------------------------------------------------------------------------//
-  {
-    super (title, keyCode);
+    // ---------------------------------------------------------------------------------//
+    public XmitTextTab(String title, KeyCode keyCode)
+    // ---------------------------------------------------------------------------------//
+    {
+        super(title, keyCode);
 
-    textFlow.setLineSpacing (1);
+        textFlow.setLineSpacing(1);
 
-    scrollPane.setPadding (new Insets (5, 5, 5, 5));
-    scrollPane.setStyle ("-fx-background: white;-fx-border-color: lightgray;");
+        scrollPane.setPadding(new Insets(5, 5, 5, 5));
+        scrollPane.setStyle("-fx-background: white;-fx-border-color: lightgray;");
 
-    setContent (scrollPane);
-  }
+        setContent(scrollPane);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  abstract List<String> getLines ();
-  // ---------------------------------------------------------------------------------//
+    // ---------------------------------------------------------------------------------//
+    abstract List<String> getLines();
+    // ---------------------------------------------------------------------------------//
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  void update ()
-  // ---------------------------------------------------------------------------------//
-  {
-    if (valid)
-      return;
+    // ---------------------------------------------------------------------------------//
+    @Override
+    void update()
+    // ---------------------------------------------------------------------------------//
+    {
+        if (valid)
+            return;
 
-    valid = true;
+        valid = true;
 
-    textFlow.getChildren ().setAll (textFormatter.format (getLines ()));
+        textFlow.getChildren().setAll(textFormatter.format(getLines()));
 
-    scrollPane.setVvalue (0);
-    scrollPane.setHvalue (0);
-  }
+        scrollPane.setVvalue(0);
+        scrollPane.setHvalue(0);
+    }
 
-  // ---------------------------------------------------------------------------------//
-  @Override
-  void setFont (Font font)
-  // ---------------------------------------------------------------------------------//
-  {
-    super.setFont (font);
+    // ---------------------------------------------------------------------------------//
+    @Override
+    void setFont(Font font)
+    // ---------------------------------------------------------------------------------//
+    {
+        super.setFont(font);
 
-    textFormatter.setFont (font);
+        textFormatter.setFont(font);
 
-    for (Node node : textFlow.getChildren ())
-      ((Text) node).setFont (font);
-  }
+        for (Node node : textFlow.getChildren())
+            ((Text) node).setFont(font);
+    }
 }

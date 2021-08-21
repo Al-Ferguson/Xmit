@@ -9,68 +9,64 @@ import javafx.scene.control.TextArea;
 class ScrollBarState
 // -----------------------------------------------------------------------------------//
 {
-  private ScrollBar scrollBar;
-  private final TextArea textArea;
-  private final Orientation orientation;
+    private ScrollBar scrollBar;
+    private final TextArea textArea;
+    private final Orientation orientation;
 
-  private double min;
-  private double max;
-  private double value;
-  private double blockIncrement;
-  private double unitIncrement;
+    private double min;
+    private double max;
+    private double value;
+    private double blockIncrement;
+    private double unitIncrement;
 
-  // not used
-  // ---------------------------------------------------------------------------------//
-  private ScrollBarState (TextArea textArea, Orientation orientation)
-  // ---------------------------------------------------------------------------------//
-  {
-    this.textArea = textArea;
-    this.orientation = orientation;
-  }
-
-  // ---------------------------------------------------------------------------------//
-  private void check ()
-  // ---------------------------------------------------------------------------------//
-  {
-    for (Node node : textArea.lookupAll (".scroll-bar"))
+    // not used
+    // ---------------------------------------------------------------------------------//
+    private ScrollBarState(TextArea textArea, Orientation orientation)
+    // ---------------------------------------------------------------------------------//
     {
-      if (node instanceof ScrollBar
-          && ((ScrollBar) node).getOrientation ().equals (orientation))
-      {
-        scrollBar = (ScrollBar) node;
-        break;
-      }
+        this.textArea = textArea;
+        this.orientation = orientation;
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  public void save ()
-  // ---------------------------------------------------------------------------------//
-  {
-    if (scrollBar == null)
-      check ();
-
-    if (scrollBar != null)
+    // ---------------------------------------------------------------------------------//
+    private void check()
+    // ---------------------------------------------------------------------------------//
     {
-      this.min = scrollBar.getMin ();
-      this.max = scrollBar.getMax ();
-      this.value = scrollBar.getValue ();
-      this.blockIncrement = scrollBar.getBlockIncrement ();
-      this.unitIncrement = scrollBar.getUnitIncrement ();
+        for (Node node : textArea.lookupAll(".scroll-bar")) {
+            if (node instanceof ScrollBar
+                    && ((ScrollBar) node).getOrientation().equals(orientation)) {
+                scrollBar = (ScrollBar) node;
+                break;
+            }
+        }
     }
-  }
 
-  // ---------------------------------------------------------------------------------//
-  public void restore ()
-  // ---------------------------------------------------------------------------------//
-  {
-    if (scrollBar != null)
+    // ---------------------------------------------------------------------------------//
+    public void save()
+    // ---------------------------------------------------------------------------------//
     {
-      scrollBar.setMin (min);
-      scrollBar.setMax (max);
-      scrollBar.setValue (value);
-      scrollBar.setUnitIncrement (unitIncrement);
-      scrollBar.setBlockIncrement (blockIncrement);
+        if (scrollBar == null)
+            check();
+
+        if (scrollBar != null) {
+            this.min = scrollBar.getMin();
+            this.max = scrollBar.getMax();
+            this.value = scrollBar.getValue();
+            this.blockIncrement = scrollBar.getBlockIncrement();
+            this.unitIncrement = scrollBar.getUnitIncrement();
+        }
     }
-  }
+
+    // ---------------------------------------------------------------------------------//
+    public void restore()
+    // ---------------------------------------------------------------------------------//
+    {
+        if (scrollBar != null) {
+            scrollBar.setMin(min);
+            scrollBar.setMax(max);
+            scrollBar.setValue(value);
+            scrollBar.setUnitIncrement(unitIncrement);
+            scrollBar.setBlockIncrement(blockIncrement);
+        }
+    }
 }
