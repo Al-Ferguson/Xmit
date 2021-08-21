@@ -1,0 +1,24 @@
+
+o	java:S115"ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(˜£˜¡
+o
+java:S3008"TRename this field "SEPARATOR" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(­èÍ»øÿÿÿÿ
+m
+java:S3776+"RRefactor this method to reduce its Cognitive Complexity from 47 to the 15 allowed.(çš–’øÿÿÿÿ
+Z
+java:S3358E"DExtract this nested ternary operation into an independent statement.(¾ªŒ¥
+Z
+java:S3358F"DExtract this nested ternary operation into an independent statement.(±ùÿÔ
+_
+java:S3358G"DExtract this nested ternary operation into an independent statement.(üİËÌùÿÿÿÿ
+Z
+java:S3358H"DExtract this nested ternary operation into an independent statement.(şØŸí
+Z
+java:S3358I"DExtract this nested ternary operation into an independent statement.(óÕŠÉ
+N	java:S106W"9Replace this use of System.out or System.err by a logger.(‚’—
+Q	java:S125f"<This block of commented-out lines of code should be removed.(ãÜ“¤
+>
+java:S16040"(Make this anonymous inner class a lambda(ÓÇõ
+V	java:S110"<This class has 6 parents which is greater than 5 authorized.(Â°œûıÿÿÿÿ
+V	java:S1103"<This class has 9 parents which is greater than 5 authorized.(²ê­üÿÿÿÿ
+w
+java:S14883"\Immediately return this expression instead of assigning it to the temporary variable "cell".(²ê­üÿÿÿÿ
