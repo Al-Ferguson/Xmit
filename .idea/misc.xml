@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ExcludeFromValidation">
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/XmitTabPane.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/SaveState.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/XmitTree.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/XmitTab.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/LineDisplayStatus.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/FilterStatus.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/FontManager.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/MembersTab.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/XmitTable.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/DataColumn.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/FileMenu.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/FilterManager.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/ViewMenu.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/XmitApp.java" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/bytezone/xmit/gui/WindowStatus.java" />
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
